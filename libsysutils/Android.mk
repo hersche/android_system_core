@@ -18,13 +18,13 @@ common_shared_libraries := \
 include $(CLEAR_VARS)
 LOCAL_SRC_FILES:= $(common_src_files)
 LOCAL_MODULE:= libsysutils
-LOCAL_CFLAGS := -Werror
+LOCAL_CFLAGS := 
 LOCAL_SHARED_LIBRARIES := $(common_shared_libraries)
 include $(BUILD_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_SRC_FILES:= $(common_src_files)
 LOCAL_MODULE:= libsysutils
-LOCAL_CFLAGS := -Werror
+LOCAL_CFLAGS := 
 LOCAL_SHARED_LIBRARIES := $(common_shared_libraries)
 include $(BUILD_STATIC_LIBRARY)

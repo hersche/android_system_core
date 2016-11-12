@@ -61,13 +61,8 @@ bool FrameworkListener::onDataAvailable(SocketClient *c) {
         return false;
     } else if (!len)
         return false;
-    if(buffer[len-1] != '\0')
+   if(buffer[len-1] != '\0')
         SLOGW("String is not zero-terminated");
-        android_errorWriteLog(0x534e4554, "29831647");
-        c->sendMsg(500, "Command too large for buffer", false);
-        mSkipToNextNullByte = true;
-        return false;
-    }
 
     int offset = 0;
     int i;
@@ -79,6 +74,7 @@ bool FrameworkListener::onDataAvailable(SocketClient *c) {
             offset = i + 1;
         }
     }
+
     return true;
 }
 
