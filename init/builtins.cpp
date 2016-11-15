@@ -48,7 +48,7 @@
 #include <android-base/file.h>
 #include <android-base/parseint.h>
 #include <android-base/stringprintf.h>
-#include <bootloader_message_writer.h>
+#include <bootloader_message/bootloader_message.h>
 #include <cutils/partition_utils.h>
 #include <cutils/android_reboot.h>
 #include <logwrap/logwrap.h>
@@ -128,6 +128,7 @@ done:
     return ret;
 }
 
+#ifndef UMOUNT_AND_FSCK_IS_UNSAFE
 // Turn off backlight while we are performing power down cleanup activities.
 static void turnOffBacklight() {
     static const char off[] = "0";
@@ -153,6 +154,7 @@ static void turnOffBacklight() {
         android::base::WriteStringToFile(off, fileName);
     }
 }
+#endif
 
 static int wipe_data_via_recovery(const std::string& reason) {
     const std::vector<std::string> options = {"--wipe_data", std::string() + "--reason=" + reason};
@@ -166,6 +168,7 @@ static int wipe_data_via_recovery(const std::string& reason) {
 }
 
 static void unmount_and_fsck(const struct mntent *entry) {
+#ifndef UMOUNT_AND_FSCK_IS_UNSAFE
     if (strcmp(entry->mnt_type, "f2fs") && strcmp(entry->mnt_type, "ext4"))
         return;
 
@@ -240,6 +243,7 @@ static void unmount_and_fsck(const struct mntent *entry) {
         android_fork_execvp_ext(ARRAY_SIZE(ext4_argv), (char **)ext4_argv,
                                 &st, true, LOG_KLOG, true, NULL, NULL, 0);
     }
+#endif
 }
 
 static int do_class_start(const std::vector<std::string>& args) {
@@ -381,6 +385,11 @@ static int do_mkdir(const std::vector<std::string>& args) {
         }
     }
     return 0;
+}
+
+/* umount <path> */
+static int do_umount(const std::vector<std::string>& args) {
+  return umount(args[1].c_str());
 }
 
 static struct {
@@ -1040,8 +1049,12 @@ static int do_restorecon_recursive(const std::vector<std::string>& args) {
     int ret = 0;
 
     for (auto it = std::next(args.begin()); it != args.end(); ++it) {
-        if (restorecon_recursive(it->c_str()) < 0)
+        /* The contents of CE paths are encrypted on FBE devices until user
+         * credentials are presented (filenames inside are mangled), so we need
+         * to delay restorecon of those until vold explicitly requests it. */
+        if (restorecon_recursive_skipce(it->c_str()) < 0) {
             ret = -errno;
+        }
     }
     return ret;
 }
@@ -1128,6 +1141,7 @@ BuiltinFunctionMap::Map& BuiltinFunctionMap::map() const {
         {"mkdir",                   {1,     4,    do_mkdir}},
         {"mount_all",               {1,     kMax, do_mount_all}},
         {"mount",                   {3,     kMax, do_mount}},
+        {"umount",                  {1,     1,    do_umount}},
         {"powerctl",                {1,     1,    do_powerctl}},
         {"restart",                 {1,     1,    do_restart}},
         {"restorecon",              {1,     kMax, do_restorecon}},

@@ -103,6 +103,10 @@ ifeq ($(KERNEL_HAS_FINIT_MODULE), false)
 LOCAL_CFLAGS += -DNO_FINIT_MODULE
 endif
 
+ifneq ($(TARGET_INIT_UMOUNT_AND_FSCK_IS_UNSAFE),)
+LOCAL_CFLAGS += -DUMOUNT_AND_FSCK_IS_UNSAFE
+endif
+
 LOCAL_MODULE:= init
 LOCAL_C_INCLUDES += \
     system/extras/ext4_utils \
@@ -114,7 +118,7 @@ LOCAL_UNSTRIPPED_PATH := $(TARGET_ROOT_OUT_UNSTRIPPED)
 
 LOCAL_STATIC_LIBRARIES := \
     libinit \
-    libbootloader_message_writer \
+    libbootloader_message \
     libfs_mgr \
     libfec \
     libfec_rs \
