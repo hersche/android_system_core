@@ -85,7 +85,7 @@ static int have_console;
 static char console_name[PROP_VALUE_MAX] = "/dev/console";
 static time_t process_needs_restart;
 
-static const char *ENV[32];
+static const char *ENV[64];
 
 bool waiting_for_exec = false;
 
@@ -864,7 +864,9 @@ static void export_kernel_boot_props() {
 #ifdef MTK_MT6795
         { "ro.boot.hardware",   "ro.hardware",   "mt6795", },
 #endif
-
+#ifdef MTK_MT6580
+        { "ro.boot.hardware",   "ro.hardware",   "mt6580", },
+#endif
 #ifndef IGNORE_RO_BOOT_REVISION
         { "ro.boot.revision",   "ro.revision",   "0", },
 #endif
@@ -966,6 +968,7 @@ static selinux_enforcing_status selinux_status_from_cmdline() {
 
 static bool selinux_is_disabled(void)
 {
+
     if (ALLOW_DISABLE_SELINUX) {
         if (access("/sys/fs/selinux", F_OK) != 0) {
             // SELinux is not compiled into the kernel, or has been disabled
