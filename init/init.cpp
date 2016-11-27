@@ -499,6 +499,7 @@ static int read_serialno()
 static bool selinux_is_enforcing(void)
 {
     return false;
+    selinux_status_from_cmdline();
 }
 
 int selinux_reload_policy(void)
